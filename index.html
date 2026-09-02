@@ -7,18 +7,65 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <nav>
-    <button data-view="dashboard">Dashboard</button>
-    <button data-view="subjects">Subjects</button>
-    <button data-view="timer">Timer</button>
-    <button data-view="resources">Resources</button>
-    <button data-view="stats">Stats</button>
-    <button data-view="goals">Goals</button>
-  </nav>
+  <div class="app-shell">
+    <nav class="sidebar" aria-label="Main navigation">
+      <div class="sidebar-brand" title="Study Tracker">🎓</div>
 
-  <main id="app"></main>
+      <div class="sidebar-nav">
+        <button class="nav-btn active" data-view="dashboard" title="Dashboard">
+          <span class="nav-icon">🏠</span>
+          <span class="nav-label">Dashboard</span>
+        </button>
+        <button class="nav-btn" data-view="subjects" title="Subjects">
+          <span class="nav-icon">📚</span>
+          <span class="nav-label">Subjects</span>
+        </button>
+        <button class="nav-btn" data-view="timer" title="Timer">
+          <span class="nav-icon">⏱️</span>
+          <span class="nav-label">Timer</span>
+        </button>
+        <button class="nav-btn" data-view="resources" title="Resources">
+          <span class="nav-icon">📁</span>
+          <span class="nav-label">Resources</span>
+        </button>
+        <button class="nav-btn" data-view="stats" title="Stats">
+          <span class="nav-icon">📊</span>
+          <span class="nav-label">Stats</span>
+        </button>
+        <button class="nav-btn" data-view="goals" title="Goals">
+          <span class="nav-icon">🎯</span>
+          <span class="nav-label">Goals</span>
+        </button>
+      </div>
+
+      <div class="sidebar-footer">
+        <button id="themeToggle" class="nav-btn theme-toggle" title="Toggle theme">
+          <span class="nav-icon" id="themeIcon">🌙</span>
+          <span class="nav-label" id="themeLabel">Dark</span>
+        </button>
+      </div>
+    </nav>
+
+    <div class="main-area">
+      <header class="topbar">
+        <div class="card greeting-card">
+          <p class="greeting-eyebrow" id="greetingEyebrow">Good day,</p>
+          <h1 class="greeting-name" id="greetingName">Student</h1>
+          <p class="greeting-sub">Stay focused and make it happen.</p>
+          <div class="greeting-wave" aria-hidden="true"></div>
+        </div>
+        <div class="card clock-card">
+          <p class="clock-date" id="clockDate">--</p>
+          <p class="clock-time" id="clockTime">--:--</p>
+        </div>
+      </header>
+
+      <main id="app"></main>
+    </div>
+  </div>
 
   <script src="data.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
+
