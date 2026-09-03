@@ -6,8 +6,10 @@
   <title>Study Tracker</title>
   <link rel="stylesheet" href="style.css">
 </head>
-<body>
-  <div class="app-shell">
+<body class="auth-screen">
+  <div id="authRoot" class="auth-root" aria-live="polite"></div>
+
+  <div class="app-shell" id="appShell">
     <nav class="sidebar" aria-label="Main navigation">
       <div class="sidebar-brand" title="Study Tracker">🎓</div>
 
@@ -39,6 +41,7 @@
       </div>
 
       <div class="sidebar-footer">
+        <div id="authBar" class="auth-bar"></div>
         <button id="themeToggle" class="nav-btn theme-toggle" title="Toggle theme">
           <span class="nav-icon" id="themeIcon">🌙</span>
           <span class="nav-label" id="themeLabel">Dark</span>
@@ -46,7 +49,7 @@
       </div>
     </nav>
 
-    <div class="main-area">
+    <div class="main-area" id="appMain">
       <header class="topbar">
         <div class="card greeting-card">
           <p class="greeting-eyebrow" id="greetingEyebrow">Good day,</p>
@@ -60,11 +63,13 @@
         </div>
       </header>
 
-      <main id="app"></main>
+      <main id="app" class="app-main"></main>
     </div>
   </div>
 
   <script src="data.js"></script>
+  <script src="firebase-config.js"></script>
+  <script src="auth.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

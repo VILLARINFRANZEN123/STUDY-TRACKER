@@ -166,37 +166,39 @@ function promptDialog(opts = {}, onConfirm) {
 }
 
 /* ---------- Persistence (subjects / resources / sessions) ---------- */
+/* All user data is namespaced per account (see auth.js → userKey()).
+   Anyone signed out stays in the shared "guest" namespace. */
 function reloadSubjects() {
   try {
-    const arr = JSON.parse(localStorage.getItem("subjects"));
+    const arr = JSON.parse(localStorage.getItem(userKey("subjects")));
     if (Array.isArray(arr)) subjects.splice(0, subjects.length, ...arr);
   } catch (e) { /* fall back to starter data */ }
 }
 
 function saveSubjects() {
-  localStorage.setItem("subjects", JSON.stringify(subjects));
+  localStorage.setItem(userKey("subjects"), JSON.stringify(subjects));
 }
 
 function reloadResources() {
   try {
-    const arr = JSON.parse(localStorage.getItem("resources"));
+    const arr = JSON.parse(localStorage.getItem(userKey("resources")));
     if (Array.isArray(arr)) resources.splice(0, resources.length, ...arr);
   } catch (e) { /* fall back to starter data */ }
 }
 
 function saveResources() {
-  localStorage.setItem("resources", JSON.stringify(resources));
+  localStorage.setItem(userKey("resources"), JSON.stringify(resources));
 }
 
 function getSessions() {
   try {
-    const arr = JSON.parse(localStorage.getItem("sessions"));
+    const arr = JSON.parse(localStorage.getItem(userKey("sessions")));
     return Array.isArray(arr) ? arr : [];
   } catch (e) { return []; }
 }
 
 function saveSessions(sessions) {
-  localStorage.setItem("sessions", JSON.stringify(sessions));
+  localStorage.setItem(userKey("sessions"), JSON.stringify(sessions));
 }
 
 /* Records one finished focus session and returns it */
@@ -724,8 +726,8 @@ function exportData() {
     subjects,
     resources,
     sessions: getSessions(),
-    studyGoal: localStorage.getItem("studyGoal") || null,
-    subjectGoals: JSON.parse(localStorage.getItem("subjectGoals")) || {}
+    studyGoal: localStorage.getItem(userKey("studyGoal")) || null,
+    subjectGoals: JSON.parse(localStorage.getItem(userKey("subjectGoals"))) || {}
   };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
@@ -746,7 +748,7 @@ function resetAllData() {
     confirmText: "Erase everything",
     danger: true
   }, () => {
-    ["subjects", "resources", "sessions", "studyGoal", "subjectGoals"].forEach(k => localStorage.removeItem(k));
+    ["subjects", "resources", "sessions", "studyGoal", "subjectGoals"].forEach(k => localStorage.removeItem(userKey(k)));
     subjects.splice(0, subjects.length);
     resources.splice(0, resources.length);
     editingResourceId = null;
@@ -759,7 +761,7 @@ function resetAllData() {
 
 /* ---------- Goals ---------- */
 function renderGoals() {
-  const goal = Number(localStorage.getItem("studyGoal")) || 0;
+  const goal = Number(localStorage.getItem(userKey("studyGoal"))) || 0;
   const stats = computeStats();
   const goalSec = goal * 3600;
   const goalPct = goalSec ? Math.min(100, Math.round((stats.weekTotal / goalSec) * 100)) : 0;
@@ -806,7 +808,7 @@ function saveGoal() {
     input.focus();
     return;
   }
-  localStorage.setItem("studyGoal", String(val));
+  localStorage.setItem(userKey("studyGoal"), String(val));
   showToast(`Weekly goal set to ${val} hours. Let’s do this! 🎯`);
   renderGoals();
 }
@@ -818,7 +820,7 @@ function clearGoal() {
     confirmText: "Clear goal",
     danger: false
   }, () => {
-    localStorage.removeItem("studyGoal");
+    localStorage.removeItem(userKey("studyGoal"));
     showToast("Weekly goal cleared.", "info");
     renderGoals();
   });
@@ -827,7 +829,7 @@ function clearGoal() {
 function displayGoal() {
   const el = document.getElementById("goalDisplay");
   if (!el) return;
-  const goal = Number(localStorage.getItem("studyGoal")) || 0;
+  const goal = Number(localStorage.getItem(userKey("studyGoal"))) || 0;
   if (!goal) {
     el.innerHTML = "";
     return;
@@ -852,7 +854,7 @@ function renderSubjectGoals() {
     container.innerHTML = `<p class="empty-text">Add a subject first to set its goal.</p>`;
     return;
   }
-  const savedGoals = JSON.parse(localStorage.getItem("subjectGoals")) || {};
+  const savedGoals = JSON.parse(localStorage.getItem(userKey("subjectGoals"))) || {};
   let html = "";
   subjects.forEach(s => {
     const cur = savedGoals[s.name] || "";
@@ -878,9 +880,9 @@ function saveSubjectGoal(id) {
     input.focus();
     return;
   }
-  const savedGoals = JSON.parse(localStorage.getItem("subjectGoals")) || {};
+  const savedGoals = JSON.parse(localStorage.getItem(userKey("subjectGoals"))) || {};
   savedGoals[s.name] = val;
-  localStorage.setItem("subjectGoals", JSON.stringify(savedGoals));
+  localStorage.setItem(userKey("subjectGoals"), JSON.stringify(savedGoals));
   showToast(`Goal for “${s.name}” saved: ${val} hours.`);
 }
 
@@ -905,7 +907,7 @@ function renderDashboard() {
     : 0;
   const completed = completedSubjects();
   const stats = computeStats();
-  const goal = Number(localStorage.getItem("studyGoal")) || 0;
+  const goal = Number(localStorage.getItem(userKey("studyGoal"))) || 0;
   const goalPct = goal ? Math.min(100, Math.round((stats.weekTotal / (goal * 3600)) * 100)) : 0;
   const unlockedCount = achievements.filter(a => achievementProgress(a).unlocked).length;
   const next = achievements.map(a => ({ a, p: achievementProgress(a) }))
@@ -1003,7 +1005,7 @@ function updateGreetingAndClock() {
     if (hour < 12) greeting = "Good morning,";
     else if (hour < 18) greeting = "Good afternoon,";
     eyebrowEl.textContent = greeting;
-    nameEl.textContent = "Student";
+    nameEl.textContent = (AuthManager.currentUser && AuthManager.currentUser.name) ? AuthManager.currentUser.name.split(" ")[0] : "Student";
   }
   const dateEl = document.getElementById("clockDate");
   const timeEl = document.getElementById("clockTime");
@@ -1046,9 +1048,14 @@ if (themeToggleBtn) {
 }
 
 /* ---------- Init ---------- */
-function init() {
+function reloadAllData() {
   reloadSubjects();
   reloadResources();
+}
+
+function init() {
+  if (!AuthManager.currentUser) return; // only render app views when signed in
+  reloadAllData();
   initTheme();
   updateGreetingAndClock();
   renderView("dashboard");

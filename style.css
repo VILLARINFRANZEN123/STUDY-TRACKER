@@ -1714,3 +1714,488 @@ body.no-scroll {
 .goal-display .goal-pct {
   margin-left: auto;
 }
+
+/* ============================================================
+   AUTH — sign-in screen (Google / Facebook / GitHub)
+   ============================================================ */
+
+/* Prevent a flash of the app shell before auth JS runs */
+body.auth-screen .app-shell {
+  display: none;
+}
+
+.auth-root {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background:
+    radial-gradient(900px 500px at 15% -10%, rgba(99, 102, 241, 0.22), transparent 60%),
+    radial-gradient(700px 450px at 110% 110%, rgba(139, 92, 246, 0.16), transparent 55%),
+    var(--bg-primary);
+  animation: authFadeIn 0.4s ease both;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 400px;
+  padding: 40px 34px 30px;
+  text-align: center;
+  background: var(--bg-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  animation: authCardIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.auth-brand {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  margin-bottom: 18px;
+  font-size: 36px;
+  background: linear-gradient(135deg, var(--accent-primary), #8b5cf6);
+  border-radius: 22px;
+  box-shadow: var(--shadow-glow-strong);
+}
+
+.auth-title {
+  margin: 0 0 8px;
+  font-size: 1.7rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+.auth-sub {
+  margin: 0 auto 28px;
+  max-width: 300px;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+/* --- Provider buttons --- */
+.auth-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin-bottom: 12px;
+  padding: 11px 14px;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #fff;
+  background: var(--bg-hover);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+}
+
+.auth-btn:hover:not([disabled]) {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.auth-btn:active:not([disabled]) {
+  transform: translateY(0);
+}
+
+.auth-btn[disabled] {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.auth-btn.loading .auth-btn-icon {
+  animation: authPulse 0.9s ease-in-out infinite;
+}
+
+.auth-btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  font-size: 1rem;
+  font-weight: 800;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.auth-btn-text {
+  flex: 1;
+  text-align: left;
+}
+
+.auth-google {
+  background: #ffffff;
+  border-color: transparent;
+  color: #1f2937;
+}
+
+.auth-google:hover:not([disabled]) {
+  background: #f1f5f9;
+}
+
+.auth-google .auth-btn-icon {
+  background: #f1f5f9;
+  color: #4285f4;
+}
+
+.auth-facebook {
+  background: #1877f2;
+  border-color: transparent;
+}
+
+.auth-facebook:hover:not([disabled]) {
+  background: #166fe0;
+}
+
+.auth-facebook .auth-btn-icon {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+.auth-github {
+  background: #24292f;
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+.auth-github:hover:not([disabled]) {
+  background: #2f363d;
+}
+
+.auth-github .auth-btn-icon {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+.auth-meta {
+  margin-top: 18px;
+  font-size: 0.78rem;
+  color: var(--text-faint);
+}
+
+/* --- Provider login popup (simulated OAuth window) --- */
+/* Base .modal-overlay starts hidden (needs .show); the provider
+   popup renders its own overlay already visible. */
+.provider-popup-overlay {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  z-index: 1200;
+}
+
+.provider-popup {
+  width: min(92vw, 380px);
+  padding: 28px 26px 20px;
+  text-align: center;
+  transform: none;
+  animation: authCardIn 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.provider-popup-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  margin-bottom: 14px;
+  font-size: 1.3rem;
+  font-weight: 800;
+  border-radius: 18px;
+}
+
+.provider-popup-logo.google {
+  background: #ffffff;
+  color: #4285f4;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.provider-popup-logo.facebook {
+  background: #1877f2;
+  color: #fff;
+}
+
+.provider-popup-logo.github {
+  background: #24292f;
+  color: #fff;
+}
+
+.provider-popup-title {
+  margin: 0 0 4px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.provider-popup-sub {
+  margin: 0 0 20px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.provider-popup-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.provider-input {
+  width: 100%;
+  padding: 11px 14px;
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  color: var(--text-primary);
+  background: var(--input-bg);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  outline: none;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.provider-input:focus {
+  border-color: var(--border-hover);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.provider-input.input-error {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 3px var(--danger-bg);
+}
+
+.provider-popup-cta {
+  padding: 11px 14px;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #fff;
+  background: var(--accent-primary);
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.provider-popup-cta:hover {
+  background: var(--accent-primary-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-glow);
+}
+
+.provider-popup-foot {
+  margin: 16px 0 0;
+  font-size: 0.75rem;
+  color: var(--text-faint);
+}
+
+/* --- Sidebar user chip + account menu --- */
+.user-chip-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.user-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 10px;
+  font-family: var(--font-body);
+  color: var(--text-secondary);
+  background: var(--bg-hover);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease;
+}
+
+.user-chip:hover {
+  background: rgba(99, 102, 241, 0.12);
+  border-color: var(--border-hover);
+}
+
+.user-chip-avatar,
+.user-menu-avatar {
+  border-radius: 50%;
+  background: var(--bg-card-solid);
+  object-fit: cover;
+}
+
+.user-chip-avatar {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+}
+
+.user-chip-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-align: left;
+}
+
+.user-chip-provider {
+  flex-shrink: 0;
+  padding: 2px 7px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--accent-light);
+  background: rgba(99, 102, 241, 0.14);
+  border-radius: 999px;
+}
+
+/* Dropdown menu — pops upward from the sidebar footer */
+.user-menu {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 0;
+  width: max(100%, 250px);
+  padding: 14px;
+  background: var(--bg-card-solid);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(8px);
+  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+  z-index: 50;
+}
+
+.user-menu.open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.user-menu-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+}
+
+.user-menu-avatar {
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+}
+
+.user-menu-name {
+  display: block;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.user-menu-email {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 180px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.user-menu-label {
+  margin: 12px 0;
+  padding-top: 10px;
+  font-size: 0.72rem;
+  color: var(--text-faint);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.user-menu-logout {
+  display: block;
+  width: 100%;
+  padding: 9px 12px;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: left;
+  color: var(--danger);
+  background: var(--danger-bg);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease;
+}
+
+.user-menu-logout:hover {
+  background: rgba(239, 68, 68, 0.25);
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+/* --- Light theme adjustments --- */
+body[data-theme="light"] .auth-root {
+  background:
+    radial-gradient(900px 500px at 15% -10%, rgba(99, 102, 241, 0.18), transparent 60%),
+    radial-gradient(700px 450px at 110% 110%, rgba(139, 92, 246, 0.12), transparent 55%),
+    #f1f5f9;
+}
+
+body[data-theme="light"] .auth-card {
+  background: rgba(255, 255, 255, 0.85);
+}
+
+body[data-theme="light"] .user-menu {
+  background: #ffffff;
+}
+
+body[data-theme="light"] .provider-popup-logo.google {
+  background: #f8fafc;
+}
+
+/* --- Animations --- */
+@keyframes authFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes authCardIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes authPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+/* --- Auth responsive --- */
+@media (max-width: 480px) {
+  .auth-card {
+    padding: 30px 22px 24px;
+  }
+  .user-chip-name,
+  .user-chip-provider {
+    display: none;
+  }
+}
+
+
+
